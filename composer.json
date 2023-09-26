@@ -1,0 +1,28 @@
+{
+    "name": "tak-pesar/tron",
+    "description": "A PHP library to create Tron wallet addresses and manage wallets using the Tron API",
+    "type": "library",
+    "keywords": [
+        "tron",
+        "trx",
+        "api",
+        "php",
+        "wallet"
+    ],
+    "autoload": {
+        "psr-4": {
+            "Tak\\Tron\\": "src"
+        }
+    },
+    "authors": [
+        {
+            "name": "Tak Pesar",
+            "email": "loser.man.2007@gmail.com"
+        }
+    ],
+    "minimum-stability": "beta",
+    "require": {
+        "php": "^8.2",
+        "simplito/elliptic-php": "^1.0"
+    }
+}
