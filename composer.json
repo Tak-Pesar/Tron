@@ -1,5 +1,5 @@
 {
-    "name": "tak-pesar/tron",
+    "name": "takpesar/tron",
     "description": "A PHP library to create Tron wallet addresses and manage wallets using the Tron API",
     "type": "library",
     "keywords": [
