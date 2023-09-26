@@ -20,7 +20,7 @@
             "email": "loser.man.2007@gmail.com"
         }
     ],
-    "minimum-stability": "stability",
+    "minimum-stability": "stable",
     "require": {
         "php": "^8.2",
         "simplito/elliptic-php": "^1.0"
