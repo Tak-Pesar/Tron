@@ -1,5 +1,6 @@
 {
     "name": "takpesar/tron",
+    "license": "MIT",
     "description": "A PHP library to create Tron wallet addresses and manage wallets using the Tron API",
     "type": "library",
     "keywords": [
