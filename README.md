@@ -32,9 +32,12 @@ $balance = $tron->getBalance();
 print 'your balance : '.$balance;
 print PHP_EOL;
 
-$send = $tron->sendTron(to : 'TJZfm2PSQ38WNwzPqSBpTbVAynZpMEmfKR',amount : 10.5);
-print 'transaction : '.var_export($send,true);
-print PHP_EOL;
+try {
+	$send = $tron->sendTron(to : 'TJZfm2PSQ38WNwzPqSBpTbVAynZpMEmfKR',amount : 10.5);
+	print 'transaction : '.var_export($send,true);
+} catch(Throwable $e){
+	print 'transaction error : '.$e->getMessage();
+}
 ```
 
 > **Note**
