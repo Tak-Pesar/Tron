@@ -36,3 +36,6 @@ $send = $tron->sendTron(to : 'TJZfm2PSQ38WNwzPqSBpTbVAynZpMEmfKR',amount : 10.5)
 print 'transaction : '.var_export($send,true);
 print PHP_EOL;
 ```
+
+> **Note**
+> Please see [`examples`](./examples) for more examples
