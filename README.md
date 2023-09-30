@@ -20,6 +20,16 @@ require __DIR__ . '/vendor/autoload.php';
 
 use Tak\Tron\API;
 
+$tron = new API();
 
+$address = $tron->generateAddress();
 
+var_dump($address);
+
+$tron = new API(privatekey : $address->privatekey,wallet : $address->wallet);
+
+$balance = $tron->getBalance();
+print 'your balance : '.$balance;
+print PHP_EOL;
+$tron->sendTron()
 ```
