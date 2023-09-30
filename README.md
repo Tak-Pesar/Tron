@@ -38,4 +38,4 @@ print PHP_EOL;
 ```
 
 > **Note**
-> Please see [`examples`](./examples) for more examples
+> Please see [`examples`](./example) for more examples
