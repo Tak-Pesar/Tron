@@ -31,5 +31,8 @@ $tron = new API(privatekey : $address->privatekey,wallet : $address->wallet);
 $balance = $tron->getBalance();
 print 'your balance : '.$balance;
 print PHP_EOL;
-$tron->sendTron()
+
+$send = $tron->sendTron();
+print 'transaction : '.var_export($send,true);
+print PHP_EOL;
 ```
