@@ -43,6 +43,10 @@ try {
 > **Note**
 > Please see [`examples`](./example) for more examples
 
+## Social Medias
+
+Telegram : [`Tak`](https://AsirRam.t.me)
+
 ## License
 
 The MIT License (MIT). Please see [`LICENSE`](./LICENSE) for more information.
