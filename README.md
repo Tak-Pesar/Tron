@@ -42,3 +42,7 @@ try {
 
 > **Note**
 > Please see [`examples`](./example) for more examples
+
+## License
+
+The MIT License (MIT). Please see [`LICENSE`](./LICENSE) for more information.
