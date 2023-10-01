@@ -43,9 +43,9 @@ try {
 > **Note**
 > Please see [`examples`](./example) for more examples
 
-## Social Medias
+## Issues
 
-Telegram : [`Tak`](https://AsirRam.t.me)
+Should you encounter any issues, please do not hesitate to reach out to us via email at [`loser.man.2007@gmail.com`](mailto:loser.man.2007@gmail.com).
 
 ## License
 
