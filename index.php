@@ -1,5 +1,1 @@
-<?php
-
-print 'hi';
-
-?>
+Hello World
