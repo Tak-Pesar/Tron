@@ -185,7 +185,7 @@ final class API extends Tools {
 		endif;
 		if(is_null($address) and isset($this->wallet) === false) throw new InvalidArgumentException('The address argument is empty and no wallet is set by default !');
 		$address = $this->address2hex(is_null($address) ? $this->wallet : $address);
-		$transactions = $this->sender->request('GET','v1/accounts/'.$address.'/transactions');
+		$transactions = $this->sender->request('GET','v1/accounts/'.$address.'/transactions',$data);
 		return $transactions;
 	}
 	public function getTransactionsFromAddress(string $address = null,int $limit = 20) : mixed {
