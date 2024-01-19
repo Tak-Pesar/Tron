@@ -90,58 +90,66 @@ final class API extends Tools {
 		return explode(PHP_EOL,file_get_contents(__DIR__.DIRECTORY_SEPARATOR.'english.txt'));
 	}
 	public function getPhraseFromPrivateKey(string $privatekey,int $base = 16) : string {
-		$words = $this->getWords();
-		srand($base);
-		shuffle($words);
-		$integer = gmp_init($privatekey,$base);
-		$split = str_split(gmp_strval($integer),3);
-		foreach($split as $number => $i):
-			if(count($split) === ($number + 1)):
-				if(str_starts_with($i,'00')): // strlen($i) === 2 || 3 && $i in range(0,9)
-					$phrases []= $words[intval($i) + 2000 + (strlen($i) * 10)];
-				elseif(str_starts_with($i,'0')): // strlen($i) === 1 || 2 || 3 && $i in range(0,99)
-					$phrases []= $words[intval($i) + 1000 + (strlen($i) * 100)];
+		if(extension_loaded('gmp')):
+			$words = $this->getWords();
+			srand($base);
+			shuffle($words);
+			$integer = gmp_init($privatekey,$base);
+			$split = str_split(gmp_strval($integer),3);
+			foreach($split as $number => $i):
+				if(count($split) === ($number + 1)):
+					if(str_starts_with($i,'00')): // strlen($i) === 2 || 3 && $i in range(0,9)
+						$phrases []= $words[intval($i) + 2000 + (strlen($i) * 10)];
+					elseif(str_starts_with($i,'0')): // strlen($i) === 1 || 2 || 3 && $i in range(0,99)
+						$phrases []= $words[intval($i) + 1000 + (strlen($i) * 100)];
+					else:
+						$phrases []= $words[intval($i) + 0];
+					endif;
 				else:
-					$phrases []= $words[intval($i) + 0];
+					$phrases []= $words[intval($i)];
 				endif;
-			else:
-				$phrases []= $words[intval($i)];
-			endif;
-		endforeach;
+			endforeach;
+		else:
+			throw new Exception('gmp extension is needed !');
+		endif;
 		return implode(chr(32),$phrases);
 	}
 	public function getPrivateKeyFromPhrase(string $phrase,int $base = 16) : string {
-		$words = $this->getWords();
-		srand($base);
-		shuffle($words);
-		$split = explode(chr(32),$phrase);
-		foreach($split as $number => $i):
-			$index = array_search($i,$words);
-			if($index === false):
-				throw new Exception('The word '.$i.' was not found !');
-			else:
-				if(count($split) === ($number + 1)):
-					if($index >= 2000):
-						$index -= 2000; // A number to recognize zeros
-						$repeat = intdiv($index,10);
-						$index -= ($repeat * 10); // strlen($i) === 2 || 3
-						$last = str_pad(strval($index),$repeat,strval(0),STR_PAD_LEFT);
-					elseif($index >= 1000):
-						$index -= 1000; // A number to recognize zeros
-						$repeat = intdiv($index,100); // strlen($i) === 1 || 2 || 3
-						$index -= ($repeat * 100);
-						$last = str_pad(strval($index),$repeat,strval(0),STR_PAD_LEFT);
-					else:
-						$last = strval($index);
-					endif;
-					$privatekey = gmp_strval(implode($integer).$last,$base);
-					return strlen($privatekey) % 2 ? strval(0).$privatekey : $privatekey;
+		if(extension_loaded('gmp')):
+			$words = $this->getWords();
+			srand($base);
+			shuffle($words);
+			$split = explode(chr(32),$phrase);
+			foreach($split as $number => $i):
+				$index = array_search($i,$words);
+				if($index === false):
+					throw new Exception('The word '.$i.' was not found !');
 				else:
-					$index = str_pad(strval($index),3,strval(0),STR_PAD_LEFT);
-					$integer []= $index;
+					if(count($split) === ($number + 1)):
+						if($index >= 2000):
+							$index -= 2000; // A number to recognize zeros
+							$repeat = intdiv($index,10);
+							$index -= ($repeat * 10); // strlen($i) === 2 || 3
+							$last = str_pad(strval($index),$repeat,strval(0),STR_PAD_LEFT);
+						elseif($index >= 1000):
+							$index -= 1000; // A number to recognize zeros
+							$repeat = intdiv($index,100); // strlen($i) === 1 || 2 || 3
+							$index -= ($repeat * 100);
+							$last = str_pad(strval($index),$repeat,strval(0),STR_PAD_LEFT);
+						else:
+							$last = strval($index);
+						endif;
+						$privatekey = gmp_strval(implode($integer).$last,$base);
+						return strlen($privatekey) % 2 ? strval(0).$privatekey : $privatekey;
+					else:
+						$index = str_pad(strval($index),3,strval(0),STR_PAD_LEFT);
+						$integer []= $index;
+					endif;
 				endif;
-			endif;
-		endforeach;
+			endforeach;
+		else:
+			throw new Exception('gmp extension is needed !');
+		endif;
 	}
 	public function getTransactionById(string $txID,bool $visible = true) : object {
 		$data = [
@@ -165,7 +173,7 @@ final class API extends Tools {
 		$transaction = $this->sender->request('POST','wallet/gettransactioninfobyblocknum',$data);
 		return $transaction;
 	}
-	public function getTransactionsRelated(string $address = null,bool $confirmed = null,bool $to = false,bool $from = false,bool $searchinternal = true,int $limit = 20,string $order = 'desc',int $mintimestamp = null,int $maxtimestamp = null) : mixed {
+	public function getTransactionsRelated(string $address = null,bool $confirmed = null,bool $to = false,bool $from = false,bool $searchinternal = true,int $limit = 20,string $order = 'block_timestamp,desc',int $mintimestamp = null,int $maxtimestamp = null) : object {
 		$data = array();
 		if(is_null($confirmed) === false):
 			$data[$confirmed ? 'only_confirmed' : 'only_unconfirmed'] = true;
@@ -186,13 +194,23 @@ final class API extends Tools {
 		if(is_null($address) and isset($this->wallet) === false) throw new InvalidArgumentException('The address argument is empty and no wallet is set by default !');
 		$address = $this->address2hex(is_null($address) ? $this->wallet : $address);
 		$transactions = $this->sender->request('GET','v1/accounts/'.$address.'/transactions',$data);
+		if(isset($transactions->success) and $transactions->success === true):
+			$transactions->iterator = new Transactions($this->sender,array($transactions));
+		endif;
 		return $transactions;
 	}
-	public function getTransactionsFromAddress(string $address = null,int $limit = 20) : mixed {
+	public function getTransactionsFromAddress(string $address = null,int $limit = 20) : object {
 		return $this->getTransactionsRelated(address : $address,limit : $limit,from : true);
 	}
-	public function getTransactionsToAddress(string $address = null,int $limit = 20) : mixed {
+	public function getTransactionsToAddress(string $address = null,int $limit = 20) : object {
 		return $this->getTransactionsRelated(address : $address,limit : $limit,to : true);
+	}
+	public function getTransactionsNext(string $url) : object {
+		$transactions = $this->sender->request('GET',$url);
+		if(isset($transactions->success) and $transactions->success === true):
+			$transactions->iterator = new Transactions($this->sender,array($transactions));
+		endif;
+		return $transactions;
 	}
 	public function createAccount(string $newaddress,string $address = null) : object {
 		$newaddress = $this->address2hex($newaddress);
@@ -276,6 +294,36 @@ final class API extends Tools {
 			$data['receiver_address'] = $this->address2hex($receiver);
 		endif;
 		$unfreezebalance = (array) $this->sender->request('POST','wallet/unfreezebalance',$data);
+		$signature = $this->signature($unfreezebalance);
+		$broadcast = (array) $this->broadcast($signature);
+		return (object) array_merge($broadcast,$signature);
+	}
+	public function freezeBalanceV2(string $address = null,int $balance = 0,string $resource = 'ENERGY',bool $sun = false) : object {
+		$data = array();
+		if(is_null($address) and isset($this->wallet) === false) throw new InvalidArgumentException('The address argument is empty and no wallet is set by default !');
+		$data['owner_address'] = $this->address2hex(is_null($address) ? $this->wallet : $address);
+		$data['frozen_balance'] = ($sun ? $balance : $balance * 1e6);
+		if(in_array($resource,['BANDWIDTH','ENERGY'])):
+			$data['resource'] = $resource;
+		else:
+			throw new InvalidArgumentException('The resource argument must be ENERGY or BANDWIDTH');
+		endif;
+		$freezebalance = (array) $this->sender->request('POST','wallet/freezebalancev2',$data);
+		$signature = $this->signature($freezebalance);
+		$broadcast = (array) $this->broadcast($signature);
+		return (object) array_merge($broadcast,$signature);
+	}
+	public function unfreezeBalanceV2(string $address = null,int $balance = 0,string $resource = 'ENERGY',bool $sun = false) : object {
+		$data = array();
+		if(is_null($address) and isset($this->wallet) === false) throw new InvalidArgumentException('The address argument is empty and no wallet is set by default !');
+		$data['owner_address'] = $this->address2hex(is_null($address) ? $this->wallet : $address);
+		$data['unfreeze_balance'] = ($sun ? $balance : $balance * 1e6);
+		if(in_array($resource,['BANDWIDTH','ENERGY'])):
+			$data['resource'] = $resource;
+		else:
+			throw new InvalidArgumentException('The resource argument must be ENERGY or BANDWIDTH');
+		endif;
+		$unfreezebalance = (array) $this->sender->request('POST','wallet/unfreezebalancev2',$data);
 		$signature = $this->signature($unfreezebalance);
 		$broadcast = (array) $this->broadcast($signature);
 		return (object) array_merge($broadcast,$signature);
