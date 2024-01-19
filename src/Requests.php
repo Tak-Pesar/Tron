@@ -16,11 +16,11 @@ final class Requests {
 	public function request(string $method,string $path,array $datas = array(),array $headers = array()) : mixed {
 		switch($method){
 			case 'POST':
-				curl_setopt($this->curl,CURLOPT_URL,$this->url.'/'.$path);
+				curl_setopt($this->curl,CURLOPT_URL,(filter_var($path,FILTER_VALIDATE_URL) ? $path : $this->url.'/'.$path));
 				curl_setopt($this->curl,CURLOPT_POSTFIELDS,json_encode($datas));
 			break;
 			case 'GET':
-				curl_setopt($this->curl,CURLOPT_URL,$this->url.'/'.$path.'?'.http_build_query($datas));
+				curl_setopt($this->curl,CURLOPT_URL,(filter_var($path,FILTER_VALIDATE_URL) ? $path : $this->url.'/'.$path.'?'.http_build_query($datas)));
 				curl_setopt($this->curl,CURLOPT_CUSTOMREQUEST,$method);
 			break;
 			default:
