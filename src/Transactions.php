@@ -7,9 +7,11 @@ namespace Tak\Tron;
 use Iterator;
 
 final class Transactions implements Iterator {
+	private array $transactions;
 	private int $position;
 
-	public function __construct(protected Requests $sender,private array $transactions){
+	public function __construct(protected Requests $sender,array $transactions){
+		$this->transactions = array_filter($transactions,fn(object $transaction) : bool => isset($transaction->success) and $transaction->success === true);
 		$this->position = 0;
 	}
 	public function current() : mixed {

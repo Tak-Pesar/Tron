@@ -181,9 +181,7 @@ final class API extends Tools {
 		$data['only_to'] = $to;
 		$data['only_from'] = $from;
 		$data['search_internal'] = $searchinternal;
-		if($limit >= 1 and $limit <= 200):
-			$data['limit'] = $limit;
-		endif;
+		$data['limit'] = max(min($limit,200),20);
 		$data['order_by'] = $order;
 		if(is_null($mintimestamp) === false):
 			$data['min_timestamp'] = date('Y-m-d\TH:i:s.v\Z',$mintimestamp);
@@ -197,6 +195,7 @@ final class API extends Tools {
 		if(isset($transactions->success) and $transactions->success === true):
 			$transactions->iterator = new Transactions($this->sender,array($transactions));
 		endif;
+		$this->sender = clone $this->sender;
 		return $transactions;
 	}
 	public function getTransactionsFromAddress(string $address = null,int $limit = 20) : object {
@@ -210,6 +209,7 @@ final class API extends Tools {
 		if(isset($transactions->success) and $transactions->success === true):
 			$transactions->iterator = new Transactions($this->sender,array($transactions));
 		endif;
+		$this->sender = clone $this->sender;
 		return $transactions;
 	}
 	public function createAccount(string $newaddress,string $address = null) : object {
@@ -255,6 +255,30 @@ final class API extends Tools {
 	public function getBalance(string $address = null,bool $sun = false) : float {
 		$account = $this->getAccount($address);
 		$balance = isset($account->balance) ? $account->balance : 0;
+		return ($sun ? $balance : $balance / 1e6);
+	}
+	public function getAccurateBalance(string $address = null,bool $sun = false) : float {
+		$account = $this->getAccount($address);
+		$owner = isset($account->address) ? $account->address : $this->address2hex(is_null($address) ? $this->wallet : $address);
+		$balance = isset($account->balance) ? $account->balance : 0;
+		$unconfirmed = $this->getTransactionsRelated(address : $address,confirmed : false,limit : 200);
+		foreach($unconfirmed->iterator as $transactions):
+			foreach($transactions->data as $transaction):
+				$contract = current($transaction->raw_data->contract)->parameter->value;
+				$amount = $contract->amount;
+				$from = $contract->owner_address;
+				$ret = current($transaction->ret);
+				$status = $ret->contractRet;
+				$fee = $ret->fee;
+				if($status === 'SUCCESS'):
+					if($from === $owner):
+						$balance -= $amount + $fee;
+					else:
+						$balance += $amount;
+					endif;
+				endif;
+			endforeach;
+		endforeach;
 		return ($sun ? $balance : $balance / 1e6);
 	}
 	public function getAccountName(string $address = null,bool $hex = false) : mixed {
