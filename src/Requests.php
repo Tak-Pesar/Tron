@@ -30,7 +30,7 @@ final class Requests {
 		curl_setopt($this->curl,CURLOPT_HTTPHEADER,$headers);
 		$result = curl_exec($this->curl);
 		$error = curl_error($this->curl);
-		return is_bool($result) ? $error : json_decode($result);
+		return is_bool($result) ? (object) array('connection_error'=>$error) : json_decode($result);
 	}
 	public function __destruct(){
 		curl_close($this->curl);
