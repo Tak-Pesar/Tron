@@ -262,23 +262,25 @@ final class API extends Tools {
 		$owner = isset($account->address) ? $account->address : $this->address2hex(is_null($address) ? $this->wallet : $address);
 		$balance = isset($account->balance) ? $account->balance : 0;
 		$unconfirmed = $this->getTransactionsRelated(address : $address,confirmed : false,limit : 200);
-		foreach($unconfirmed->iterator as $transactions):
-			foreach($transactions->data as $transaction):
-				$contract = current($transaction->raw_data->contract)->parameter->value;
-				$amount = $contract->amount;
-				$from = $contract->owner_address;
-				$ret = current($transaction->ret);
-				$status = $ret->contractRet;
-				$fee = $ret->fee;
-				if($status === 'SUCCESS'):
-					if($from === $owner):
-						$balance -= $amount + $fee;
-					else:
-						$balance += $amount;
+		if(isset($unconfirmed->iterator)):
+			foreach($unconfirmed->iterator as $transactions):
+				foreach($transactions->data as $transaction):
+					$contract = current($transaction->raw_data->contract)->parameter->value;
+					$amount = $contract->amount;
+					$from = $contract->owner_address;
+					$ret = current($transaction->ret);
+					$status = $ret->contractRet;
+					$fee = $ret->fee;
+					if($status === 'SUCCESS'):
+						if($from === $owner):
+							$balance -= $amount + $fee;
+						else:
+							$balance += $amount;
+						endif;
 					endif;
-				endif;
+				endforeach;
 			endforeach;
-		endforeach;
+		endif;
 		return ($sun ? $balance : $balance / 1e6);
 	}
 	public function getAccountName(string $address = null,bool $hex = false) : mixed {
