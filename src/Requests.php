@@ -18,15 +18,15 @@ final class Requests {
 			case 'POST':
 				curl_setopt($this->curl,CURLOPT_URL,(filter_var($path,FILTER_VALIDATE_URL) ? $path : $this->url.'/'.$path));
 				curl_setopt($this->curl,CURLOPT_POSTFIELDS,json_encode($datas));
-			break;
+				break;
 			case 'GET':
 				curl_setopt($this->curl,CURLOPT_URL,(filter_var($path,FILTER_VALIDATE_URL) ? $path : $this->url.'/'.$path.'?'.http_build_query($datas)));
-				curl_setopt($this->curl,CURLOPT_CUSTOMREQUEST,$method);
-			break;
+				break;
 			default:
 				error_log('The request method is inappropriate for the URL !');
-			break;
+				break;
 		}
+		curl_setopt($this->curl,CURLOPT_CUSTOMREQUEST,$method);
 		curl_setopt($this->curl,CURLOPT_HTTPHEADER,$headers);
 		$result = curl_exec($this->curl);
 		$error = curl_error($this->curl);
