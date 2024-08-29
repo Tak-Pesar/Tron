@@ -40,6 +40,24 @@ try {
 }
 ```
 
+## Use Phar _( Faster and easier ! )_
+
+```php
+<?php
+
+copy('https://tron.phar.live/tron.phar','trx.phar');
+
+require_once './trx.phar';
+
+use Tak\Tron\API;
+
+$tron = new API();
+
+$address = $tron->generateAddress();
+
+var_dump($address);
+```
+
 > **Note**
 > Please see [`examples`](./example) for more examples
 
