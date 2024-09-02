@@ -45,7 +45,7 @@ try {
 ```php
 <?php
 
-copy('https://tron.phar.live/tron.phar','trx.phar');
+copy('https://tron.phar.fun/tron.phar','trx.phar');
 
 require_once './trx.phar';
 
