@@ -9,7 +9,7 @@ composer require takpesar/tron
 
 ## Requirements
 
-This package requires PHP 8 or later. GMP and curl extensions require this package
+This package requires PHP 8 or later. BCMath and Curl extensions require this package
 
 ## Usage
 
