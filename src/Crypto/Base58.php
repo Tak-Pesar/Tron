@@ -17,8 +17,8 @@ abstract class Base58 {
 			$value = strval(null);
 			if(is_null($digits)) $digits = self::digits($base);
 			while($dec > $base - 1):
-				$rest = bcmod($dec,$base);
-				$dec = bcdiv($dec,$base);
+				$rest = bcmod(strval($dec),strval($base));
+				$dec = bcdiv(strval($dec),strval($base));
 				$value = $digits[intval($rest)].$value;
 			endwhile;
 			$value = $digits[intval($dec)].$value;
@@ -53,8 +53,8 @@ abstract class Base58 {
 			$dec = strval(0);
 			for($loop = 0;$loop < $size;$loop++):
 				$element = strpos($digits,$value[$loop]);
-				$power = bcpow($base,$size - $loop - 1);
-				$dec = bcadd($dec,bcmul($element,$power));
+				$power = bcpow(strval($base),strval($size - $loop - 1));
+				$dec = bcadd($dec,bcmul(strval($element),$power));
 			endfor;
 			return ($dec <= PHP_INT_MAX and $dec >= PHP_INT_MIN) ? intval($dec) : strval($dec);
 		else:
