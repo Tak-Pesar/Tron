@@ -22,7 +22,7 @@ abstract class Tools {
 		endif;
 	}
 	public function dec2hex(string $dec,int $base = 16) : string {
-		if(extension_loaded('bc')):
+		if(extension_loaded('bcmath')):
 			if(bccomp($dec,0) == 0) return strval(0);
 			$hex = strval(null);
 			while(bccomp($dec,0) > 0):
@@ -36,7 +36,7 @@ abstract class Tools {
 		endif;
 	}
 	public function hex2dec(string $hex,int $base = 16) : string {
-		if(extension_loaded('bc')):
+		if(extension_loaded('bcmath')):
 			$hex = ltrim($hex,'0x');
 			$dec = strval(0);
 			$len = strlen($hex);
