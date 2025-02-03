@@ -10,21 +10,21 @@ use Exception;
 
 abstract class Base58 {
 	static public function dec2base(string | int $dec,int $base,string $digits = null) : string {
-		if(extension_loaded('gmp')):
+		if(extension_loaded('bc')):
 			if($base < 2 or $base > 256):
 				throw new InvalidArgumentException('Invalid base argument , The base must be between 2 and 256');
 			endif;
 			$value = strval(null);
 			if(is_null($digits)) $digits = self::digits($base);
 			while($dec > $base - 1):
-				$rest = gmp_mod($dec,$base);
-				$dec = gmp_div($dec,$base);
+				$rest = bcmod($dec,$base);
+				$dec = bcdiv($dec,$base);
 				$value = $digits[intval($rest)].$value;
 			endwhile;
 			$value = $digits[intval($dec)].$value;
 			return $value;
 		else:
-			throw new Exception('gmp extension is needed !');
+			throw new Exception('bc extension is needed !');
 		endif;
 	}
 	static public function bc2bin(string | int $dec) : string {
@@ -43,7 +43,7 @@ abstract class Base58 {
 		return self::encode(self::bin2bc($checksum));
 	}
 	static public function base2dec(string $value,int $base,$digits = false) : string | int {
-		if(extension_loaded('gmp')):
+		if(extension_loaded('bc')):
 			if($base < 2 or $base > 256):
 				throw new InvalidArgumentException('Invalid base argument , The base must be between 2 and 256');
 			endif;
@@ -53,12 +53,12 @@ abstract class Base58 {
 			$dec = strval(0);
 			for($loop = 0;$loop < $size;$loop++):
 				$element = strpos($digits,$value[$loop]);
-				$power = gmp_pow($base,$size - $loop - 1);
-				$dec = gmp_add($dec,gmp_mul($element,$power));
+				$power = bcpow($base,$size - $loop - 1);
+				$dec = bcadd($dec,bcmul($element,$power));
 			endfor;
-			return ($dec <= PHP_INT_MAX and $dec >= PHP_INT_MIN) ? gmp_intval($dec) : gmp_strval($dec);
+			return ($dec <= PHP_INT_MAX and $dec >= PHP_INT_MIN) ? intval($dec) : strval($dec);
 		else:
-			throw new Exception('gmp extension is needed !');
+			throw new Exception('bc extension is needed !');
 		endif;
 	}
 	static public function bin2bc(string $value) : string | int {
