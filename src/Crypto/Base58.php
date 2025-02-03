@@ -10,7 +10,7 @@ use Exception;
 
 abstract class Base58 {
 	static public function dec2base(string | int $dec,int $base,string $digits = null) : string {
-		if(extension_loaded('bc')):
+		if(extension_loaded('bcmath')):
 			if($base < 2 or $base > 256):
 				throw new InvalidArgumentException('Invalid base argument , The base must be between 2 and 256');
 			endif;
@@ -43,7 +43,7 @@ abstract class Base58 {
 		return self::encode(self::bin2bc($checksum));
 	}
 	static public function base2dec(string $value,int $base,$digits = false) : string | int {
-		if(extension_loaded('bc')):
+		if(extension_loaded('bcmath')):
 			if($base < 2 or $base > 256):
 				throw new InvalidArgumentException('Invalid base argument , The base must be between 2 and 256');
 			endif;
