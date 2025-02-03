@@ -86,70 +86,63 @@ final class API extends Tools {
 		return strval(41).substr($hash,24);
 	}
 	private function getWords() : array {
-		if(file_exists(__DIR__.DIRECTORY_SEPARATOR.'english.txt') === false) throw new Exception('english.txt file doesn\'t exists !');
-		return explode(PHP_EOL,file_get_contents(__DIR__.DIRECTORY_SEPARATOR.'english.txt'));
+		$path = strval(__DIR__.DIRECTORY_SEPARATOR.'english.txt');
+		if(file_exists($path) === false) throw new Exception('english.txt file doesn\'t exists !');
+		return explode(chr(10),file_get_contents($path));
 	}
 	public function getPhraseFromPrivateKey(string $privatekey,int $base = 16) : string {
-		if(extension_loaded('gmp')):
-			$words = $this->getWords();
-			srand($base);
-			shuffle($words);
-			$integer = gmp_init($privatekey,$base);
-			$split = str_split(gmp_strval($integer),3);
-			foreach($split as $number => $i):
-				if(count($split) === ($number + 1)):
-					if(str_starts_with($i,'00')): // strlen($i) === 2 || 3 && $i in range(0,9)
-						$phrases []= $words[intval($i) + 2000 + (strlen($i) * 10)];
-					elseif(str_starts_with($i,'0')): // strlen($i) === 1 || 2 || 3 && $i in range(0,99)
-						$phrases []= $words[intval($i) + 1000 + (strlen($i) * 100)];
-					else:
-						$phrases []= $words[intval($i) + 0];
-					endif;
+		$words = $this->getWords();
+		srand($base);
+		shuffle($words);
+		$integer = $this->hex2dec($privatekey,$base);
+		$split = str_split(strval($integer),3);
+		foreach($split as $number => $i):
+			if(count($split) === ($number + 1)):
+				if(str_starts_with($i,'00')): // strlen($i) === 2 || 3 && $i in range(0,9)
+					$phrases []= $words[intval($i) + 2000 + (strlen($i) * 10)];
+				elseif(str_starts_with($i,'0')): // strlen($i) === 1 || 2 || 3 && $i in range(0,99)
+					$phrases []= $words[intval($i) + 1000 + (strlen($i) * 100)];
 				else:
-					$phrases []= $words[intval($i)];
+					$phrases []= $words[intval($i) + 0];
 				endif;
-			endforeach;
-		else:
-			throw new Exception('gmp extension is needed !');
-		endif;
+			else:
+				$phrases []= $words[intval($i)];
+			endif;
+		endforeach;
 		return implode(chr(32),$phrases);
 	}
 	public function getPrivateKeyFromPhrase(string $phrase,int $base = 16) : string {
-		if(extension_loaded('gmp')):
-			$words = $this->getWords();
-			srand($base);
-			shuffle($words);
-			$split = explode(chr(32),$phrase);
-			foreach($split as $number => $i):
-				$index = array_search($i,$words);
-				if($index === false):
-					throw new Exception('The word '.$i.' was not found !');
-				else:
-					if(count($split) === ($number + 1)):
-						if($index >= 2000):
-							$index -= 2000; // A number to recognize zeros
-							$repeat = intdiv($index,10);
-							$index -= ($repeat * 10); // strlen($i) === 2 || 3
-							$last = str_pad(strval($index),$repeat,strval(0),STR_PAD_LEFT);
-						elseif($index >= 1000):
-							$index -= 1000; // A number to recognize zeros
-							$repeat = intdiv($index,100); // strlen($i) === 1 || 2 || 3
-							$index -= ($repeat * 100);
-							$last = str_pad(strval($index),$repeat,strval(0),STR_PAD_LEFT);
-						else:
-							$last = strval($index);
-						endif;
-						$privatekey = gmp_strval(implode($integer).$last,$base);
-						return strlen($privatekey) % 2 ? strval(0).$privatekey : $privatekey;
+		$words = $this->getWords();
+		srand($base);
+		shuffle($words);
+		$split = explode(chr(32),$phrase);
+		foreach($split as $number => $i):
+			$index = array_search($i,$words);
+			if($index === false):
+				throw new Exception('The word '.$i.' was not found !');
+			else:
+				if(count($split) === ($number + 1)):
+					if($index >= 2000):
+						$index -= 2000; // A number to recognize zeros
+						$repeat = intdiv($index,10);
+						$index -= ($repeat * 10); // strlen($i) === 2 || 3
+						$last = str_pad(strval($index),$repeat,strval(0),STR_PAD_LEFT);
+					elseif($index >= 1000):
+						$index -= 1000; // A number to recognize zeros
+						$repeat = intdiv($index,100); // strlen($i) === 1 || 2 || 3
+						$index -= ($repeat * 100);
+						$last = str_pad(strval($index),$repeat,strval(0),STR_PAD_LEFT);
 					else:
-						$index = str_pad(strval($index),3,strval(0),STR_PAD_LEFT);
-						$integer []= $index;
+						$last = strval($index);
 					endif;
+					$privatekey = $this->dec2hex(implode($integer).$last,$base);
+					return strlen($privatekey) % 2 ? strval(0).$privatekey : $privatekey;
+				else:
+					$index = str_pad(strval($index),3,strval(0),STR_PAD_LEFT);
+					$integer []= $index;
 				endif;
-			endforeach;
-		else:
-			throw new Exception('gmp extension is needed !');
-		endif;
+			endif;
+		endforeach;
 	}
 	public function getTransactionById(string $txID,bool $visible = true) : object {
 		$data = [

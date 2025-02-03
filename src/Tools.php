@@ -21,6 +21,35 @@ abstract class Tools {
 			return $address;
 		endif;
 	}
+	public function dec2hex(string $dec,int $base = 16) : string {
+		if(extension_loaded('bc')):
+			if(bccomp($dec,0) == 0) return strval(0);
+			$hex = strval(null);
+			while(bccomp($dec,0) > 0):
+				$mod = bcmod($dec,$base);
+				$hex = dechex(intval($mod)).$hex;
+				$dec = bcdiv($dec,$base,0);
+			endwhile;
+			return $hex;
+		else:
+			throw new Exception('bc extension is needed !');
+		endif;
+	}
+	public function hex2dec(string $hex,int $base = 16) : string {
+		if(extension_loaded('bc')):
+			$hex = ltrim($hex,'0x');
+			$dec = strval(0);
+			$len = strlen($hex);
+			for($i = 0; $i < $len; $i++):
+				$current = hexdec($hex[$i]);
+				$dec = bcmul($dec,$base);
+				$dec = bcadd($dec,strval($current));
+			endfor;
+			return $dec;
+		else:
+			throw new Exception('bc extension is needed !');
+		endif;
+	}
 	public function validation(string $address) : bool {
 		if(preg_match('/^T[A-HJ-NP-Za-km-z1-9]{33}$/',$address)):
 			$hex = $this->address2hex($address);
