@@ -23,12 +23,12 @@ abstract class Tools {
 	}
 	public function dec2hex(string $dec,int $base = 16) : string {
 		if(extension_loaded('bcmath')):
-			if(bccomp($dec,0) == 0) return strval(0);
+			if(bccomp($dec,strval(0)) == 0) return strval(0);
 			$hex = strval(null);
-			while(bccomp($dec,0) > 0):
-				$mod = bcmod($dec,$base);
+			while(bccomp($dec,strval(0)) > 0):
+				$mod = bcmod($dec,strval($base));
 				$hex = dechex(intval($mod)).$hex;
-				$dec = bcdiv($dec,$base,0);
+				$dec = bcdiv($dec,strval($base),0);
 			endwhile;
 			return $hex;
 		else:
@@ -42,7 +42,7 @@ abstract class Tools {
 			$len = strlen($hex);
 			for($i = 0; $i < $len; $i++):
 				$current = hexdec($hex[$i]);
-				$dec = bcmul($dec,$base);
+				$dec = bcmul($dec,strval($base));
 				$dec = bcadd($dec,strval($current));
 			endfor;
 			return $dec;
