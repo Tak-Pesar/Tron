@@ -6,8 +6,6 @@ namespace Tak\Tron;
 
 use Tak\Tron\Crypto\Keccak;
 
-use Tak\Tron\Crypto\Base58;
-
 use Tak\Tron\Crypto\Secp;
 
 use Elliptic\EC;
@@ -21,7 +19,7 @@ final class API extends Tools {
 	private string $privatekey;
 	private string $wallet;
 
-	public function __construct(string $apiurl = 'https://api.trongrid.io',string $privatekey = null,string $wallet = null){
+	public function __construct(string $apiurl = 'https://api.trongrid.io',? string $privatekey = null,? string $wallet = null){
 		$this->sender = new Requests($apiurl);
 		if(is_null($privatekey) === false) $this->privatekey = $privatekey;
 		if(is_null($wallet) === false) $this->wallet = $this->hex2address($wallet);
@@ -32,7 +30,7 @@ final class API extends Tools {
 	public function setWallet(string $wallet) : void {
 		$this->wallet = $this->hex2address($wallet);
 	}
-	public function createTransaction(string $to,float $amount,string $from = null,string $extradata = null,bool $sun = false) : object {
+	public function createTransaction(string $to,float $amount,? string $from = null,? string $extradata = null,bool $sun = false) : object {
 		$to = $this->address2hex($to);
 		if(is_null($from) and isset($this->wallet) === false) throw new InvalidArgumentException('The from argument is empty and no wallet is set by default !');
 		$from = $this->address2hex(is_null($from) ? $this->wallet : $from);
@@ -49,7 +47,7 @@ final class API extends Tools {
 		$broadcast = (array) $this->broadcast($signature);
 		return (object) array_merge($broadcast,$signature);
 	}
-	public function transferAsset(string $to,string $tokenid,float $amount,string $from = null,string $extradata = null,bool $sun = false) : object {
+	public function transferAsset(string $to,string $tokenid,float $amount,? string $from = null,? string $extradata = null,bool $sun = false) : object {
 		$to = $this->address2hex($to);
 		if(is_null($from) and isset($this->wallet) === false) throw new InvalidArgumentException('The from argument is empty and no wallet is set by default !');
 		$from = $this->address2hex(is_null($from) ? $this->wallet : $from);
@@ -115,6 +113,7 @@ final class API extends Tools {
 		$words = $this->getWords();
 		srand($base);
 		shuffle($words);
+		$integer = array();
 		$split = explode(chr(32),$phrase);
 		foreach($split as $number => $i):
 			$index = array_search($i,$words);
@@ -166,7 +165,7 @@ final class API extends Tools {
 		$transaction = $this->sender->request('POST','wallet/gettransactioninfobyblocknum',$data);
 		return $transaction;
 	}
-	public function getTransactionsRelated(string $address = null,bool $confirmed = null,bool $to = false,bool $from = false,bool $searchinternal = true,int $limit = 20,string $order = 'block_timestamp,desc',int $mintimestamp = null,int $maxtimestamp = null) : object {
+	public function getTransactionsRelated(? string $address = null,? bool $confirmed = null,bool $to = false,bool $from = false,bool $searchinternal = true,int $limit = 20,string $order = 'block_timestamp,desc',? int $mintimestamp = null,? int $maxtimestamp = null) : object {
 		$data = array();
 		if(is_null($confirmed) === false):
 			$data[$confirmed ? 'only_confirmed' : 'only_unconfirmed'] = true;
@@ -191,10 +190,10 @@ final class API extends Tools {
 		$this->sender = clone $this->sender;
 		return $transactions;
 	}
-	public function getTransactionsFromAddress(string $address = null,int $limit = 20) : object {
+	public function getTransactionsFromAddress(? string $address = null,int $limit = 20) : object {
 		return $this->getTransactionsRelated(address : $address,limit : $limit,from : true);
 	}
-	public function getTransactionsToAddress(string $address = null,int $limit = 20) : object {
+	public function getTransactionsToAddress(? string $address = null,int $limit = 20) : object {
 		return $this->getTransactionsRelated(address : $address,limit : $limit,to : true);
 	}
 	public function getTransactionsNext(string $url) : object {
@@ -205,7 +204,7 @@ final class API extends Tools {
 		$this->sender = clone $this->sender;
 		return $transactions;
 	}
-	public function createAccount(string $newaddress,string $address = null) : object {
+	public function createAccount(string $newaddress,? string $address = null) : object {
 		$newaddress = $this->address2hex($newaddress);
 		if(is_null($address) and isset($this->wallet) === false) throw new InvalidArgumentException('The address argument is empty and no wallet is set by default !');
 		$address = $this->address2hex(is_null($address) ? $this->wallet : $address);
@@ -218,7 +217,7 @@ final class API extends Tools {
 		$broadcast = (array) $this->broadcast($signature);
 		return (object) array_merge($broadcast,$signature);
 	}
-	public function getAccount(string $address = null) : object {
+	public function getAccount(? string $address = null) : object {
 		if(is_null($address) and isset($this->wallet) === false) throw new InvalidArgumentException('The address argument is empty and no wallet is set by default !');
 		$address = $this->address2hex(is_null($address) ? $this->wallet : $address);
 		$data = [
@@ -227,7 +226,7 @@ final class API extends Tools {
 		$account = $this->sender->request('POST','walletsolidity/getaccount',$data);
 		return $account;
 	}
-	public function getAccountNet(string $address = null) : object {
+	public function getAccountNet(? string $address = null) : object {
 		if(is_null($address) and isset($this->wallet) === false) throw new InvalidArgumentException('The address argument is empty and no wallet is set by default !');
 		$address = $this->address2hex(is_null($address) ? $this->wallet : $address);
 		$data = [
@@ -236,7 +235,7 @@ final class API extends Tools {
 		$accountnet = $this->sender->request('POST','wallet/getaccountnet',$data);
 		return $accountnet;
 	}
-	public function getAccountResource(string $address = null) : object {
+	public function getAccountResource(? string $address = null) : object {
 		if(is_null($address) and isset($this->wallet) === false) throw new InvalidArgumentException('The address argument is empty and no wallet is set by default !');
 		$address = $this->address2hex(is_null($address) ? $this->wallet : $address);
 		$data = [
@@ -245,12 +244,12 @@ final class API extends Tools {
 		$accountresource = $this->sender->request('POST','wallet/getaccountresource',$data);
 		return $accountresource;
 	}
-	public function getBalance(string $address = null,bool $sun = false) : float {
+	public function getBalance(? string $address = null,bool $sun = false) : float {
 		$account = $this->getAccount($address);
 		$balance = isset($account->balance) ? $account->balance : 0;
 		return ($sun ? $balance : $balance / 1e6);
 	}
-	public function getAccurateBalance(string $address = null,bool $sun = false) : float {
+	public function getAccurateBalance(? string $address = null,bool $sun = false) : float {
 		$account = $this->getAccount($address);
 		$owner = isset($account->address) ? $account->address : $this->address2hex(is_null($address) ? $this->wallet : $address);
 		$balance = isset($account->balance) ? $account->balance : 0;
@@ -276,12 +275,12 @@ final class API extends Tools {
 		endif;
 		return ($sun ? $balance : $balance / 1e6);
 	}
-	public function getAccountName(string $address = null,bool $hex = false) : mixed {
+	public function getAccountName(? string $address = null,bool $hex = false) : mixed {
 		$account = $this->getAccount($address);
 		$accountname = isset($account->account_name) ? $account->account_name : null;
 		return ($accountname ? ($hex ? $accountname : hex2bin($accountname)) : null);
 	}
-	public function freezeBalance(string $address = null,int $balance = 0,int $duration = 3,string $resource = 'ENERGY',string $receiver = null,bool $sun = false) : object {
+	public function freezeBalance(? string $address = null,int $balance = 0,int $duration = 3,string $resource = 'ENERGY',? string $receiver = null,bool $sun = false) : object {
 		$data = array();
 		if(is_null($address) and isset($this->wallet) === false) throw new InvalidArgumentException('The address argument is empty and no wallet is set by default !');
 		$data['owner_address'] = $this->address2hex(is_null($address) ? $this->wallet : $address);
@@ -300,7 +299,7 @@ final class API extends Tools {
 		$broadcast = (array) $this->broadcast($signature);
 		return (object) array_merge($broadcast,$signature);
 	}
-	public function unfreezeBalance(string $address = null,string $resource = 'ENERGY',string $receiver = null) : object {
+	public function unfreezeBalance(? string $address = null,string $resource = 'ENERGY',? string $receiver = null) : object {
 		$data = array();
 		if(is_null($address) and isset($this->wallet) === false) throw new InvalidArgumentException('The address argument is empty and no wallet is set by default !');
 		$data['owner_address'] = $this->address2hex(is_null($address) ? $this->wallet : $address);
@@ -317,7 +316,7 @@ final class API extends Tools {
 		$broadcast = (array) $this->broadcast($signature);
 		return (object) array_merge($broadcast,$signature);
 	}
-	public function freezeBalanceV2(string $address = null,int $balance = 0,string $resource = 'ENERGY',bool $sun = false) : object {
+	public function freezeBalanceV2(? string $address = null,int $balance = 0,string $resource = 'ENERGY',bool $sun = false) : object {
 		$data = array();
 		if(is_null($address) and isset($this->wallet) === false) throw new InvalidArgumentException('The address argument is empty and no wallet is set by default !');
 		$data['owner_address'] = $this->address2hex(is_null($address) ? $this->wallet : $address);
@@ -332,7 +331,7 @@ final class API extends Tools {
 		$broadcast = (array) $this->broadcast($signature);
 		return (object) array_merge($broadcast,$signature);
 	}
-	public function unfreezeBalanceV2(string $address = null,int $balance = 0,string $resource = 'ENERGY',bool $sun = false) : object {
+	public function unfreezeBalanceV2(? string $address = null,int $balance = 0,string $resource = 'ENERGY',bool $sun = false) : object {
 		$data = array();
 		if(is_null($address) and isset($this->wallet) === false) throw new InvalidArgumentException('The address argument is empty and no wallet is set by default !');
 		$data['owner_address'] = $this->address2hex(is_null($address) ? $this->wallet : $address);
@@ -347,7 +346,7 @@ final class API extends Tools {
 		$broadcast = (array) $this->broadcast($signature);
 		return (object) array_merge($broadcast,$signature);
 	}
-	public function getDelegatedResource(string $to,string $from = null) : object {
+	public function getDelegatedResource(string $to,? string $from = null) : object {
 		$to = $this->address2hex($to);
 		if(is_null($from) and isset($this->wallet) === false) throw new InvalidArgumentException('The from argument is empty and no wallet is set by default !');
 		$from = $this->address2hex(is_null($from) ? $this->wallet : $from);
@@ -358,7 +357,7 @@ final class API extends Tools {
 		$delegatedresource = $this->sender->request('POST','wallet/getdelegatedresource',$data);
 		return $delegatedresource;
 	}
-	public function getDelegatedResourceAccountIndex(string $address = null) : object {
+	public function getDelegatedResourceAccountIndex(? string $address = null) : object {
 		if(is_null($address) and isset($this->wallet) === false) throw new InvalidArgumentException('The address argument is empty and no wallet is set by default !');
 		$address = $this->address2hex(is_null($address) ? $this->wallet : $address);
 		$data = [
@@ -367,7 +366,7 @@ final class API extends Tools {
 		$delegatedresourceaccountindex = $this->sender->request('POST','wallet/getdelegatedresourceaccountindex',$data);
 		return $delegatedresourceaccountindex;
 	}
-	public function changeAccountName(string $name,string $address = null) : object {
+	public function changeAccountName(string $name,? string $address = null) : object {
 		if(is_null($address) and isset($this->wallet) === false) throw new InvalidArgumentException('The address argument is empty and no wallet is set by default !');
 		$address = $this->address2hex(is_null($address) ? $this->wallet : $address);
 		$data = [
@@ -379,7 +378,7 @@ final class API extends Tools {
 		$broadcast = $this->broadcast($signature);
 		return $broadcast;
 	}
-	public function getBlock(string $idornum,bool $detail = false) : object {
+	public function getBlock(string $id,bool $detail = false) : object {
 		$data = [
 			'id_or_num'=>$id,
 			'detail'=>$detail
