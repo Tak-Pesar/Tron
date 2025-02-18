@@ -45,7 +45,7 @@ try {
 ```php
 <?php
 
-$path = realpath(__DIR__.DIRECTORY_SEPARATOR.'trx.phar');
+$path = __DIR__.DIRECTORY_SEPARATOR.'trx.phar';
 
 if(file_exists($path) === false) copy('https://tron.phar.fun/tron.phar',$path);
 
