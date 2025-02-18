@@ -45,9 +45,11 @@ try {
 ```php
 <?php
 
-copy('https://tron.phar.fun/tron.phar','trx.phar');
+$path = realpath(__DIR__.DIRECTORY_SEPARATOR.'trx.phar');
 
-require_once './trx.phar';
+if(file_exists($path) === false) copy('https://tron.phar.fun/tron.phar',$path);
+
+require_once $path;
 
 use Tak\Tron\API;
 
